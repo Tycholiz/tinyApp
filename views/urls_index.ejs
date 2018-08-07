@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>TinyApp</title>
+</head>
+<body>
+    <ul>
+      <% for (let key in urlDatabase) { %>
+        <li><%= urlDatabase[key] %> - <%= key %></li>
+      <% } %>
+    </ul>
+</body>
+</html>
