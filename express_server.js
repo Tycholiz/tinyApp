@@ -13,16 +13,6 @@ app.get("/", (req, res) => {
   res.end("Hello!");
 });
 
-app.get("/urls", (req, res) => {                               //this is a route handler. It tells us what will be rendered when the browser loads the '/' path of the website we are on.
-  res.render('urls_index', {
-        urlDatabase: urlDatabase
-  });
-});
-
-app.get("/urls.json", (req, res) => {                     //this is a route handler
-  res.json(urlDatabase);
-});
-
 app.get("/hello", (req, res) => {
   let templateVars = {
     greeting: 'Hello World!'
@@ -30,19 +20,22 @@ app.get("/hello", (req, res) => {
   res.render("hello_world", templateVars);
 });
 
-app.get("/urls", (req, res) => {
-  let templateVars = {
-    urls: urlDatabases
-  };
-  res.render("urls_index", templateVars);
+app.get("/urls", (req, res) => {                               //this is a route handler. It tells us what will be rendered when the browser loads the '/' path of the website we are on.
+  res.render('urls_index', {
+    urlDatabase: urlDatabase                  //key refers to the EJS doc, value refers to the object in this doc
+  });
 });
 
-// app.get("/urls/:id", (req, res) => {
-//   let templateVars = {
-//     shortURL: req.params.id
-//   };
-//   res.render("urls_show", templateVars);
-// });
+app.get("/urls.json", (req, res) => {                     //this is a route handler
+  res.json(urlDatabase);
+});
+
+app.get("/urls/:id", (req, res) => {
+  let templateVars = {
+    shortURL: req.params.id
+  };
+  res.render("urls_show", templateVars);
+});
 
 app.listen(PORT, () => {                                  //this is a route handler
   console.log(`Example app listening on port ${PORT}!`);
