@@ -13,14 +13,13 @@ const urlDatabase = {
 };
 
 function generateRandomString() {
-  var text = "";
-  var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-  for (var i = 0; i < 6; i++) {
-    text += possible.charAt(Math.floor(Math.random() * possible.length));
+  const possibleChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+  let shorty = "";
+  for (let i = 0; i < 6; i++) {
+    var randomNum = Math.floor((Math.random() * possibleChars.length - 1)) + 1;
+    shorty += possibleChars[randomNum];
   }
-
-  return text;
+  return shorty;
 }
 
 
@@ -48,12 +47,13 @@ app.get("/urls.json", (req, res) => {                     //this is a route hand
 app.get("/urls/new", (req, res) => {          //this route handler must go before the one directly below it. they are both a page right after /urls/, so order matters here. in these cases, the more specific one will go first (this one is more specific because :id will change depending on what is passed through)
   res.render("urls_new");
 });
-
+var shortStr = generateRandomString();
 app.post("/urls", (req, res) => {
-  console.log(req.body);  // debug statement to see POST parameters
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
-  urlDatabase[generateRandomString()] = req.body.longURL;
-  console.log(urlDatabase);
+  // console.log(req.body);  // debug statement to see POST parameters
+                        //important to remember that we can only have one status code per request. It is line 'return' line of a function in that sense
+  urlDatabase[shortStr] = req.body.longURL;
+  console.log(urlDatabase);  //this will log to the console every time a POST request is made (ie. whenever the form is submitted)
+  res.redirect('http://localhost:8080/urls/' + shortStr);
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -64,7 +64,16 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.get("/u/:shortURL", (req, res) => {
+
+  let longURL = urlDatabase[shortStr];
+  console.log(longURL)                    //in order to console.log this one, we need to go to localhost:8080/u/shortStr
+  res.redirect(longURL);
+
+});
+
 app.listen(PORT, () => {                                  //this is a route handler
   console.log(`Example app listening on port ${PORT}!`);
 });
+
 
