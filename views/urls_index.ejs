@@ -9,7 +9,12 @@
 <body>
     <ul>
       <% for (let key in urlDatabase) { %>
-        <li><%= urlDatabase[key] %> - <%= key %></li>
+        <li>
+         <%= key %> ⟶ <%= urlDatabase[key] %>
+          <form method="POST" action="/urls/9sm5xK/delete">
+            <input type="submit" value="Delete"> <!-- this is a button -->
+          </form>
+        </li>
       <% } %>
     </ul>
 </body>
