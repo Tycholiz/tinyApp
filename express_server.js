@@ -32,7 +32,8 @@ app.get("/urls.json", (req, res) => {                     //this is a route hand
 
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
-    shortURL: req.params.id
+    shortURL: req.params.id,
+    urlDatabase: urlDatabase
   };
   res.render("urls_show", templateVars);
 });

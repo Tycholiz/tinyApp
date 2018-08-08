@@ -3,7 +3,10 @@
 <head>
   <title>TinyApp</title>
 </head>
+<header>
+    <% include ./partials/_header %>
+</header>
 <body>
-
+  <h2><%= shortURL %> is the short form of <%= urlDatabase[shortURL] %></h2>
 </body>
 </html>
