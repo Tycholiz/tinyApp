@@ -23,14 +23,6 @@ function generateRandomString() {
   return shorty;
 }
 
-function deleteURL(key) {
-  delete urlDatabase[key];
-}
-
-// function updateURL(key) {
-//   urlDatabase[key] = longURL;
-// }
-
 //render hello when user visits '/'
 app.get("/", (req, res) => {
   res.end("Hello!");
@@ -43,25 +35,31 @@ app.get("/hello", (req, res) => {
   res.render("hello_world", templateVars);
 });
 
-app.get("/urls", (req, res) => {
+//render urls_index when user requests /urls
+app.get("/urls", (req, res) => {                               //this is a route handler. It tells us what will be rendered when the browser loads the '/' path of the website we are on.
   res.render('urls_index', {
-    urlDatabase: urlDatabase
+    urlDatabase: urlDatabase                  //key refers to the EJS doc, value refers to the object in this doc
   });
 });
 
-app.get("/urls.json", (req, res) => {
+app.get("/urls.json", (req, res) => {                     //this is a route handler
   res.json(urlDatabase);
 });
 
+//this route handler must go before the one directly below it. they are both a page right after /urls/, so order matters here. in these cases, the more specific one will go first (this one is more specific because :id will change depending on what is passed through)
 app.get("/urls/new", (req, res) => {
   res.render("urls_new");
 });
 
-//add url to list
-app.post("/urls", (req, res) => {
+
+//create new
+app.post("/urls", (req, res) => { //the request is made to /urls because we are requesting to add something onto this url (the new URL we added in /urls/new)
+  // console.log(req.body);  // debug statement to see POST parameters
+                        //important to remember that we can only have one status code per request. It is like 'return' line of a function in that sense
   const shortStr = generateRandomString();
   urlDatabase[shortStr] = req.body.longURL;
-  res.redirect('/urls/' + shortStr);
+  // console.log(urlDatabase);  //this will log to the console every time a POST request is made (ie. whenever the form is submitted)
+  res.redirect('http://localhost:8080/urls/' + shortStr);
 });
 
 app.get("/urls/:id", (req, res) => {
@@ -72,28 +70,26 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+//redirect the user to the longURL when they enter shortURL
 app.get("/u/:shortURL", (req, res) => {
   let longURL = urlDatabase[shortStr];
+  // console.log(longURL)                    //in order to console.log this one, we need to go to localhost:8080/u/shortStr
   res.redirect("https://www." + longURL);
 });
 
-//delete url
+//redirect to /urls when user deletes a url from the list
+//this /delete path is almost imaginary, in that we will never be able to go to it. We simply tell the browser something, and it knows what to do based on the url
 app.post("/urls/:id/delete", (req, res) => {
   let key = req.params.id;
-  deleteURL(key);
+  delete urlDatabase[key];
   res.redirect("/urls");
 });
 
-//update url
-app.post("/urls/:id", (req, res) => {   //route = path + method. In order to link to ejs, the entire route HERE must match up with the form on the ejs file(action and method)
-  console.log(req.body);
-  console.log(req.body.longURL);
-  let key = req.params.id;
-  deleteURL(key);
-  urlDatabase[key] = req.body.longURL //coming from ejs
-  res.redirect("/urls");
+//update
+app.post("/urls/:id", (req, res) => {
+  urlDatabase[shortStr] = req.body.longURL;
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, () => {                                  //this is a route handler
   console.log(`Example app listening on port ${PORT}!`);
 });
