@@ -1,43 +1,57 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
+const functionsModule = require("./functions");
 
-var app = express();
-var PORT = 8080; // default port 8080
+const generateRandomString = functionsModule.generateRandomString;
+
+const app = express();
+const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs") //This tells the Express app to use EJS as its templating engine
 
+//######### MIDDLEWARE ##########
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));  //this lets us see the object in the terminal, with key = longURL and value = https://lighthouselabs.ca. Without this, it will just return undefined. console.log(req.body) lets us see this when put into the app.post(/urls) route handler. remember that we must npm install bodyparser
+//############################
 
-const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-};
-
-function generateRandomString() {
-  const possibleChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-  let shorty = "";
-  for (let i = 0; i < 6; i++) {
-    var randomNum = Math.floor((Math.random() * possibleChars.length - 1)) + 1;
-    shorty += possibleChars[randomNum];
-  }
-  return shorty;
-}
 
 function deleteURL(key) {
   delete urlDatabase[key];
 }
 
-// function updateURL(key) {
-//   urlDatabase[key] = longURL;
-// }
+//########### DATA ############
+urlDatabase = {
+  "b2xVn2": "http://www.lighthouselabs.ca",
+  "9sm5xK": "http://www.google.com"
+},
 
+users = {
+  "user1RandomID": {
+    id: "userRandomID",
+    email: "user@example.com",
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID",
+    email: "user2@example.com",
+    password: "dishwasher-funk"
+  },
+  "user3RandomID": {
+    id: "funkymonkey",
+    email: "funkymonkey@example.com",
+    password: "funkymonkey"
+  }
+}
+//##########################
+
+//####### ROUTE HANDLERS ##############
 //render hello when user visits '/'
 app.get("/", (req, res) => {
   res.end("Hello!");
 });
 
+//render hello world
 app.get("/hello", (req, res) => {
   let templateVars = {
     greeting: 'Hello World!',
@@ -46,14 +60,15 @@ app.get("/hello", (req, res) => {
   res.render("hello_world", templateVars);
 });
 
+// render urls_index when visiting /urls
 app.get("/urls", (req, res) => {
   let templateVars = {
     username: req.cookies["username"],
     urlDatabase: urlDatabase
   };
   res.render('urls_index', templateVars);
-
 });
+
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -64,16 +79,16 @@ app.get("/urls/new", (req, res) => {
   let templateVars = {
     username: req.cookies["username"]
   };
-  console.log(templateVars);
   res.render("urls_new", templateVars);
 });
 
-//add url to list
+//add new url to list
 app.post("/urls", (req, res) => {
   const shortStr = generateRandomString();
   urlDatabase[shortStr] = req.body.longURL;
   res.redirect('/urls/' + shortStr);
 });
+
 
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
@@ -85,23 +100,25 @@ app.get("/urls/:id", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  let longURL = urlDatabase[shortStr];
-  res.redirect("https://www." + longURL);
+  console.log(req.originalUrl);
+  let shortStr = req.params.shortURL     //why wont this work for new URLs??!???!? How else can I access the shortURL that is created when I make this new webpage in my database?
+  // console.log("shortURL: ", shortStr);
+  let fullUrl = urlDatabase[shortStr];
+  console.log("full url: ", fullUrl);
+  res.redirect("http://www." + fullUrl);
 });
 
 //delete url
 app.post("/urls/:id/delete", (req, res) => {
   let key = req.params.id;
-  deleteURL(key);
+  deleteURL(key, urlDatabase);
   res.redirect("/urls");
 });
 
 //update url
 app.post("/urls/:id", (req, res) => {   //route = path + method. In order to link to ejs, the entire route HERE must match up with the form on the ejs file(action and method)
-  console.log(req.body);
-  console.log(req.body.longURL);
   let key = req.params.id;
-  deleteURL(key);
+  deleteURL(key, urlDatabase);
   urlDatabase[key] = req.body.longURL //coming from ejs
   res.redirect("/urls");
 });
@@ -113,11 +130,35 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
+
+app.get("/register", (req, res) => {
+  let templateVars = {
+    username: req.cookies["username"]
+  };
+  res.render("urls_register", templateVars);
+});
+
+// adds new user object to the users object
+app.post("/register", (req, res) =>  {
+  const userID = generateRandomString();
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+  users[userID] = {};
+  users[userID]['id'] = userID;
+  users[userID]['email'] = userEmail;
+  users[userID]['password'] = userPassword;
+  console.log(users);
+
+
+  console.log(users);
+  // console.log("users: ", users);
+  // console.log("userEmail: ", req.body.email);
+});
+
 app.post("/logout", (req, res) => {
-  console.log(req.cookies);
   res.clearCookie('username').redirect('/urls');
 });
 
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Teleporting to the server! (Port: ${PORT})`);
 });
