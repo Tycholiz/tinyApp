@@ -4,9 +4,11 @@
   <title>TinyApp</title>
 </head>
 <header>
-    <% include ./partials/_header %>
 </header>
 <body>
+<header>
+  <% include ./partials/_header %>
+</header>
 <p><a href="/urls/new">Add new URL</a></p>
     <ul>
       <% for (let key in urlDatabase) { %>

@@ -1,8 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head></head>
+  <head>
+  </head>
   <body style="font-size:20px; padding:50px;">
-    <% include partials/_header %>
+  <header>
+   <% include ./partials/_header %>
+
+  </header>
     <form action="/urls" method="POST" style="margin:150px;">    <!-- when this form is submitted, it will make a POST request to /urls, and the body will contain one URL-encoded name-value pair with the name longURL. -->
       <label for="longURL">Enter a URL:</label>
       <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px">  <!-- this is a search field -->

@@ -1,11 +1,13 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+
 var app = express();
 var PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs") //This tells the Express app to use EJS as its templating engine
 
-
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));  //this lets us see the object in the terminal, with key = longURL and value = https://lighthouselabs.ca. Without this, it will just return undefined. console.log(req.body) lets us see this when put into the app.post(/urls) route handler. remember that we must npm install bodyparser
 
 const urlDatabase = {
@@ -38,23 +40,32 @@ app.get("/", (req, res) => {
 
 app.get("/hello", (req, res) => {
   let templateVars = {
-    greeting: 'Hello World!'
+    greeting: 'Hello World!',
+    username: req.cookies["username"]
   };
   res.render("hello_world", templateVars);
 });
 
 app.get("/urls", (req, res) => {
-  res.render('urls_index', {
+  let templateVars = {
+    username: req.cookies["username"],
     urlDatabase: urlDatabase
-  });
+  };
+  res.render('urls_index', templateVars);
+
 });
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+//render new url page
 app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+  let templateVars = {
+    username: req.cookies["username"]
+  };
+  console.log(templateVars);
+  res.render("urls_new", templateVars);
 });
 
 //add url to list
@@ -67,7 +78,8 @@ app.post("/urls", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
     shortURL: req.params.id,
-    urlDatabase: urlDatabase
+    urlDatabase: urlDatabase,
+    username: req.cookies["username"]
   };
   res.render("urls_show", templateVars);
 });
@@ -92,6 +104,18 @@ app.post("/urls/:id", (req, res) => {   //route = path + method. In order to lin
   deleteURL(key);
   urlDatabase[key] = req.body.longURL //coming from ejs
   res.redirect("/urls");
+});
+
+//cookies!
+app.post("/login", (req, res) => {
+  //req.body.username is making reference to the ejs file.
+  res.cookie('username', req.body.username); //set a cookie and name it "username"
+  res.redirect("/urls");
+});
+
+app.post("/logout", (req, res) => {
+  console.log(req.cookies);
+  res.clearCookie('username').redirect('/urls');
 });
 
 app.listen(PORT, () => {
