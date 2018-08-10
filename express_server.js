@@ -71,22 +71,24 @@ app.get("/urls/new", (req, res) => {
 
 //add new url to list
 app.post("/urls", (req, res) => {
+  console.log("post urls")
   const shortStr = generateRandomString();
   urlDatabase[shortStr] = req.body.longURL;
   res.redirect('/urls/' + shortStr);
 });
 
 app.get("/urls/:id", (req, res) => {
-  let templateVars = {
-    user: users[req.cookies.user_id],
-    urlDatabase: urlDatabase,
-    shortURL: req.params.id
+    console.log("get urls id")
+    let templateVars = {
+      user: users[req.cookies.user_id],
+      urlDatabase: urlDatabase,
+      shortURL: req.params.id
   };
-  res.render("urls_show", templateVars);
+  res.render("urls_register", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  console.log(req.originalUrl);
+  console.log("get /u/shorturl")
   let shortStr = req.params.shortURL;
   let fullUrl = urlDatabase[shortStr];
   res.redirect("http://www." + fullUrl);
@@ -108,6 +110,7 @@ app.post("/urls/:id", (req, res) => {   //route = path + method. In order to lin
 });
 
 app.get("/login", (req, res) => {
+  console.log("get login")
   let templateVars = {
     user: users[req.cookies.user_id]
   };
@@ -119,6 +122,7 @@ app.post("/login", (req, res) => {
   //req.body.username is making reference to the ejs file.
 
   //check to see if email that user inputs is in the db
+  console.log("post login")
   const userEmail = req.body.email;
   const userPassword = req.body.password;
   for (var key in users) {
@@ -132,6 +136,7 @@ app.post("/login", (req, res) => {
 });
 
 app.get("/register", (req, res) => {
+  console.log("get /register")
   let templateVars = {
     user: users[req.cookies.user_id],
     urlDatabase: urlDatabase
@@ -141,7 +146,7 @@ app.get("/register", (req, res) => {
 
 // adds new user object to the users object
 app.post("/register", (req, res) =>  {
-  // console.log(users);
+  console.log("post /register");
   const userID = generateRandomString();
   const userEmail = req.body.email;
   const userPassword = req.body.password;
