@@ -4,19 +4,17 @@
   <title>TinyApp</title>
 </head>
 <body>
-  <% if (!username) { %>
-  <h1>Welcome to TinyURL!</h1>
+  <% if (!user) { %>
+  <h1>Welcome to TinyAPP!</h1>
   <h2>Please take a seat and log in :)</h2>
-  <form action="/login" method="POST" style="margin:150px;">    <!-- when this form is submitted, it will make a POST request to /urls, and the body will contain one URL-encoded name-value pair with the name longURL. -->
-    <label for="longURL">Enter username:</label>
-    <input id="longURL" type="text" name="username" placeholder="username" style="width: 300px">  <!-- this is a search field -->
-    <input type="submit" value="Log in"> <!-- this is a button -->
-  </form>
+  <a href="/urls/register">Register</a>
+  <a href="/login">Login</a>
+  <a href="/logout">Logout</a>
   <% } else { %>
-    <h1>Whaddup, biatch? (a.k.a <%= username %>)</h1>
+    <h1>Whaddup, biatch? (a.k.a <%= user.email %>)</h1>
     <form action="/logout" method="POST">
       <input type="submit" value="Logout">
     </form>
-    <% } %>
+  <% } %>
 </body>
 </html>

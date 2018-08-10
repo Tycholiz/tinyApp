@@ -29,8 +29,8 @@ urlDatabase = {
 users = {
   "user1RandomID": {
     id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+    email: "asd@asd.com",
+    password: "asdasd"
   },
  "user2RandomID": {
     id: "user2RandomID",
@@ -38,7 +38,7 @@ users = {
     password: "dishwasher-funk"
   },
   "user3RandomID": {
-    id: "funkymonkey",
+    id: "user3RandomID",
     email: "funkymonkey@example.com",
     password: "funkymonkey"
   }
@@ -46,29 +46,15 @@ users = {
 //##########################
 
 //####### ROUTE HANDLERS ##############
-//render hello when user visits '/'
-app.get("/", (req, res) => {
-  res.end("Hello!");
-});
-
-//render hello world
-app.get("/hello", (req, res) => {
-  let templateVars = {
-    greeting: 'Hello World!',
-    username: req.cookies["username"]
-  };
-  res.render("hello_world", templateVars);
-});
 
 // render urls_index when visiting /urls
 app.get("/urls", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"],
+    user: users[req.cookies.user_id],
     urlDatabase: urlDatabase
   };
   res.render('urls_index', templateVars);
 });
-
 
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
@@ -77,7 +63,8 @@ app.get("/urls.json", (req, res) => {
 //render new url page
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"]
+    user: users[req.cookies.user_id],
+    urlDatabase: urlDatabase
   };
   res.render("urls_new", templateVars);
 });
@@ -89,22 +76,19 @@ app.post("/urls", (req, res) => {
   res.redirect('/urls/' + shortStr);
 });
 
-
 app.get("/urls/:id", (req, res) => {
   let templateVars = {
-    shortURL: req.params.id,
+    user: users[req.cookies.user_id],
     urlDatabase: urlDatabase,
-    username: req.cookies["username"]
+    shortURL: req.params.id
   };
   res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
   console.log(req.originalUrl);
-  let shortStr = req.params.shortURL     //why wont this work for new URLs??!???!? How else can I access the shortURL that is created when I make this new webpage in my database?
-  // console.log("shortURL: ", shortStr);
+  let shortStr = req.params.shortURL;
   let fullUrl = urlDatabase[shortStr];
-  console.log("full url: ", fullUrl);
   res.redirect("http://www." + fullUrl);
 });
 
@@ -123,40 +107,72 @@ app.post("/urls/:id", (req, res) => {   //route = path + method. In order to lin
   res.redirect("/urls");
 });
 
+app.get("/login", (req, res) => {
+  let templateVars = {
+    user: users[req.cookies.user_id]
+  };
+  res.render('urls_login', templateVars);
+});
+
 //cookies!
 app.post("/login", (req, res) => {
   //req.body.username is making reference to the ejs file.
-  res.cookie('username', req.body.username); //set a cookie and name it "username"
-  res.redirect("/urls");
-});
 
+  //check to see if email that user inputs is in the db
+  const userEmail = req.body.email;
+  const userPassword = req.body.password;
+  for (var key in users) {
+    if (userEmail === users[key].email && userPassword === users[key].password) {
+      res.cookie('user_id', users[key].id);
+      res.redirect("/urls");   // THIS IS SUPPOSED TO REDIRECT TO '/', WHICH HAD "HELLO"
+      return;
+    }
+  }
+  res.sendStatus(403);
+});
 
 app.get("/register", (req, res) => {
   let templateVars = {
-    username: req.cookies["username"]
+    user: users[req.cookies.user_id],
+    urlDatabase: urlDatabase
   };
   res.render("urls_register", templateVars);
 });
 
 // adds new user object to the users object
 app.post("/register", (req, res) =>  {
+  // console.log(users);
   const userID = generateRandomString();
   const userEmail = req.body.email;
   const userPassword = req.body.password;
-  users[userID] = {};
-  users[userID]['id'] = userID;
-  users[userID]['email'] = userEmail;
-  users[userID]['password'] = userPassword;
-  console.log(users);
-
-
-  console.log(users);
-  // console.log("users: ", users);
-  // console.log("userEmail: ", req.body.email);
+  //if missing either username or pw, send 400
+  let userExists = false;
+  if (!userEmail || !userPassword) {
+    res.sendStatus(400);
+  } else {
+    for (let key in users) {
+      console.log(users[key].email);
+      console.log(userEmail);
+      if (userEmail === users[key].email) {
+        userExists = true;
+      }
+    }
+    if (userExists) {
+      res.sendStatus(400);
+    } else {
+      users[userID] = {};
+      users[userID]['id'] = userID;
+      users[userID]['email'] = userEmail;
+      users[userID]['password'] = userPassword;
+      res.cookie('user_id', userID);
+      res.redirect("/urls");
+    }
+  }
 });
 
+//logs the user out
 app.post("/logout", (req, res) => {
-  res.clearCookie('username').redirect('/urls');
+  res.clearCookie('user_id').redirect('/urls');
 });
 
 app.listen(PORT, () => {
