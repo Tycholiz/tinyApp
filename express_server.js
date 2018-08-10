@@ -19,36 +19,56 @@ app.use(bodyParser.urlencoded({extended: true}));  //this lets us see the object
 function deleteURL(key) {
   delete urlDatabase[key];
 }
+function isUser(cookie) {
+  if (cookie) {
+    return true;
+  } else {
+    return false;
+  }
+}
 
 //########### DATA ############
-urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
-},
 
-users = {
-  "user1RandomID": {
+var urlDatabase = {
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    shortURL: "b2xVn2",
+    userId: "userRandomID"
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    shortURL: "9sm5xK",
+    userId: "user2RandomID"
+  }
+}
+
+const users = {
+  "userRandomID": {
     id: "userRandomID",
     email: "asd@asd.com",
     password: "asdasd"
   },
- "user2RandomID": {
+  "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
     password: "dishwasher-funk"
-  },
-  "user3RandomID": {
-    id: "user3RandomID",
-    email: "funkymonkey@example.com",
-    password: "funkymonkey"
   }
 }
+
+
+
+// urlDatabase.user_ID = "user3RandomID";
+// urlDatabase.url_long = "www.facebook.com";
+// urlDatabase.url_short = "sjf74j";
+
+
 //##########################
 
 //####### ROUTE HANDLERS ##############
 
 // render urls_index when visiting /urls
 app.get("/urls", (req, res) => {
+  console.log("get urls");
   let templateVars = {
     user: users[req.cookies.user_id],
     urlDatabase: urlDatabase
@@ -66,36 +86,49 @@ app.get("/urls/new", (req, res) => {
     user: users[req.cookies.user_id],
     urlDatabase: urlDatabase
   };
-  res.render("urls_new", templateVars);
+  //checks to see if user has cookie when trying to access urls/new
+  if (isUser(req.cookies.user_id)) {
+    res.render("urls_new", templateVars);
+  } else {
+    res.render("urls_login", templateVars);
+  }
 });
 
 //add new url to list
+
 app.post("/urls", (req, res) => {
+  var urlObj = {}
   console.log("post urls")
+  const longURL = req.body.longURL
   const shortStr = generateRandomString();
-  urlDatabase[shortStr] = req.body.longURL;
+  urlObj.userId = req.cookies.user_id;
+  urlObj.shortURL = shortStr;
+  urlObj.longURL = longURL;
+  urlDatabase[shortStr] = urlObj;
+  console.log(urlDatabase);
   res.redirect('/urls/' + shortStr);
 });
 
 app.get("/urls/:id", (req, res) => {
-    console.log("get urls id")
-    let templateVars = {
-      user: users[req.cookies.user_id],
-      urlDatabase: urlDatabase,
-      shortURL: req.params.id
+  console.log("get urls id")
+  let templateVars = {
+    user: users[req.cookies.user_id],
+    urlDatabase: urlDatabase,
+    shortURL: req.params.id
   };
-  res.render("urls_register", templateVars);
+  res.render("urls_show", templateVars);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  console.log("get /u/shorturl")
+  console.log("get /u/shorturl");
   let shortStr = req.params.shortURL;
-  let fullUrl = urlDatabase[shortStr];
+  let fullUrl = urlDatabase[shortStr].longURL;
   res.redirect("http://www." + fullUrl);
 });
 
 //delete url
 app.post("/urls/:id/delete", (req, res) => {
+  console.log("post urls/:id/delete")
   let key = req.params.id;
   deleteURL(key, urlDatabase);
   res.redirect("/urls");
@@ -103,9 +136,9 @@ app.post("/urls/:id/delete", (req, res) => {
 
 //update url
 app.post("/urls/:id", (req, res) => {   //route = path + method. In order to link to ejs, the entire route HERE must match up with the form on the ejs file(action and method)
-  let key = req.params.id;
-  deleteURL(key, urlDatabase);
-  urlDatabase[key] = req.body.longURL //coming from ejs
+  console.log("post urls/:id");
+  let shortURL = req.params.id;
+  urlDatabase[shortURL].longURL = req.body.longURL; //coming from ejs
   res.redirect("/urls");
 });
 
@@ -122,7 +155,7 @@ app.post("/login", (req, res) => {
   //req.body.username is making reference to the ejs file.
 
   //check to see if email that user inputs is in the db
-  console.log("post login")
+  console.log("post login");
   const userEmail = req.body.email;
   const userPassword = req.body.password;
   for (var key in users) {
@@ -156,8 +189,6 @@ app.post("/register", (req, res) =>  {
     res.sendStatus(400);
   } else {
     for (let key in users) {
-      console.log(users[key].email);
-      console.log(userEmail);
       if (userEmail === users[key].email) {
         userExists = true;
       }
@@ -177,6 +208,7 @@ app.post("/register", (req, res) =>  {
 
 //logs the user out
 app.post("/logout", (req, res) => {
+  console.log("get logout")
   res.clearCookie('user_id').redirect('/urls');
 });
 

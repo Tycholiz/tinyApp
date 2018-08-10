@@ -7,5 +7,8 @@ module.exports = {
       shorty += possibleChars[randomNum];
     }
     return shorty;
+  },
+  cleanUp: function(userInput) {
+
   }
 }
