@@ -2,7 +2,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const functionsModule = require("./functions");
-const ejsLint = require('ejs-lint');
+const bcrypt = require('bcrypt');
+
 
 const generateRandomString = functionsModule.generateRandomString;
 
@@ -172,14 +173,13 @@ app.get("/login", (req, res) => {
 
 //cookies!
 app.post("/login", (req, res) => {
-  //req.body.username is making reference to the ejs file.
-
-  //check to see if email that user inputs is in the db
   console.log("post login");
+  //check to see if email that user inputs is in the db
+
   const userEmail = req.body.email;
   const userPassword = req.body.password;
   for (var key in users) {
-    if (userEmail === users[key].email && userPassword === users[key].password) {
+    if (userEmail === users[key].email && bcrypt.compareSync(userPassword, users[key].password)) {
       res.cookie('user_id', users[key].id);
       res.redirect("/urls");   // THIS IS SUPPOSED TO REDIRECT TO '/', WHICH HAD "HELLO"
       return;
@@ -199,10 +199,13 @@ app.get("/register", (req, res) => {
 
 // adds new user object to the users object
 app.post("/register", (req, res) =>  {
-  console.log("post /register");
+  console.log("post register");
   const userID = generateRandomString();
   const userEmail = req.body.email;
   const userPassword = req.body.password;
+  const hashedPassword = bcrypt.hashSync(userPassword, 10);
+  req.body.password = hashedPassword;
+
   //if missing either username or pw, send 400
   let userExists = false;
   if (!userEmail || !userPassword) {
@@ -219,7 +222,7 @@ app.post("/register", (req, res) =>  {
       users[userID] = {};
       users[userID]['id'] = userID;
       users[userID]['email'] = userEmail;
-      users[userID]['password'] = userPassword;
+      users[userID]['password'] = hashedPassword;
       res.cookie('user_id', userID);
       res.redirect("/urls");
     }
