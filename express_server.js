@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const cookieParser = require("cookie-parser");
+// const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const functionsModule = require("./functions");
 const bcrypt = require('bcrypt');
 
@@ -15,6 +16,11 @@ app.set("view engine", "ejs") //This tells the Express app to use EJS as its tem
 //######### MIDDLEWARE ##########
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));  //this lets us see the object in the terminal, with key = longURL and value = https://lighthouselabs.ca. Without this, it will just return undefined. console.log(req.body) lets us see this when put into the app.post(/urls) route handler. remember that we must npm install bodyparser
+app.use(cookieSession({
+  name: 'session',
+  keys: ["Mel", "Kyle", "Eli", "Huatulco", "Juno", "Molly", "Frankie"],
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}));
 //############################
 
 
@@ -87,7 +93,6 @@ const users = {
 
 // render urls_index when visiting /urls
 app.get("/urls", (req, res) => {
-  console.log(showUserRelevantUrls(req.cookies.user_id));
   console.log("get urls");
   let templateVars = {
     user: users[req.cookies.user_id],
