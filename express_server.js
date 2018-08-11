@@ -14,7 +14,7 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs") //This tells the Express app to use EJS as its templating engine
 
 //######### MIDDLEWARE ##########
-app.use(cookieParser());
+// app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));  //this lets us see the object in the terminal, with key = longURL and value = https://lighthouselabs.ca. Without this, it will just return undefined. console.log(req.body) lets us see this when put into the app.post(/urls) route handler. remember that we must npm install bodyparser
 app.use(cookieSession({
   name: 'session',
@@ -94,6 +94,7 @@ const users = {
 // render urls_index when visiting /urls
 app.get("/urls", (req, res) => {
   console.log("get urls");
+  console.log(req.session);
   let templateVars = {
     user: users[req.cookies.user_id],
     usersURLS: showUserRelevantUrls(req.cookies.user_id),
