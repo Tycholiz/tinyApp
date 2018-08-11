@@ -7,21 +7,30 @@
     <header>
       <% include ./partials/_header %>
     </header>
-    <h3><a href="/urls/new">Add new URL</a></h3>
-    <ul>
 
-      <% for (let i in usersURLS) { %>
-        <% if (cookie === usersURLS[i].userId) { %>
-          <li>
-            <%= usersURLS[i].longURL %> ⟶ <%= usersURLS[i].shortURL %>
-            <form method="POST" action="/urls/<%= usersURLS[i].shortURL %>/delete">
-              <p><a href="/urls/<%= usersURLS[i].shortURL %>">Edit</a></p>
-              <input type="submit" value="Delete">
-            </form>
-          </li>
-        <% } %>
+    <% if(user) {%>
+       <% for (let i in urlDatabase) { %>
+          <% if(user.id===urlDatabase[i].userId) { %>
+            <h3><a href="/urls/new">Add new URL</a></h3>
+             <ul>
+              <li>
+                <%= urlDatabase[i].longURL %> ⟶ <%= urlDatabase[i].shortURL %>
+                <form method="POST" action="/urls/<%= urlDatabase[i].shortURL %>/delete">
+                  <p><a href="/urls/<%= urlDatabase[i].shortURL %>">Edit</a></p>
+                  <input type="submit" value="Delete">
+                </form>
+              </li>
+
+
+            </ul>
+
+          <% } %>
+
       <% } %>
-    </ul>
+
+    <% } %>
+
+
 
   </body>
 </html>

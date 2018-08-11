@@ -1,10 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-// const cookieParser = require("cookie-parser");
 const cookieSession = require("cookie-session");
 const functionsModule = require("./functions");
 const bcrypt = require('bcrypt');
-
 
 const generateRandomString = functionsModule.generateRandomString;
 
@@ -14,7 +12,6 @@ const PORT = 8080; // default port 8080
 app.set("view engine", "ejs") //This tells the Express app to use EJS as its templating engine
 
 //######### MIDDLEWARE ##########
-// app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));  //this lets us see the object in the terminal, with key = longURL and value = https://lighthouselabs.ca. Without this, it will just return undefined. console.log(req.body) lets us see this when put into the app.post(/urls) route handler. remember that we must npm install bodyparser
 app.use(cookieSession({
   name: 'session',
@@ -35,7 +32,26 @@ function isUser(cookie) {
   }
 }
 
+
+
+
+function loginCheckUser(email, password){
+
+  let flag = false;
+  for(var user in users){
+    if(users[user].email===email){
+      //check for the hashed password
+      if(bcrypt.compareSync(password, users[user].password)){
+        console.log("compare sync matched")
+        flag = true;
+        return users[user];
+      } // returns true
+    }
+  }
+  return flag;
+}
 function showUserRelevantUrls(cookie) {
+  console.log(urlDatabase);
   var usersURLS = [];
   for (var i in urlDatabase) {
     if (urlDatabase[i].userId === cookie) {
@@ -45,7 +61,7 @@ function showUserRelevantUrls(cookie) {
       temp.userId = urlDatabase[i].userId;
       usersURLS.push(temp);
 
-      // usersURLS.push({       alternative way to write
+      // usersURLS.push({                        alternative way to write this
       //   longURL: urlDatabase[i].longURL,
       //   shortURL: urlDatabase[i].shortURL,
       //   userId: urlDatabase[i].userId
@@ -74,11 +90,11 @@ var urlDatabase = {
   }
 }
 
-const users = {
+var users = {
   "userRandomID": {
     id: "userRandomID",
     email: "asd@asd.com",
-    password: "asdasd"
+    password: "$2b$10$BqdR.tBdc8k8kMhP27Ucjud33/lNSH4JV.szWe9/7bvZgeJkT7Gf6"
   },
   "user2RandomID": {
     id: "user2RandomID",
@@ -87,20 +103,32 @@ const users = {
   }
 }
 
+
+const test = bcrypt.hashSync("asdasd", 10);
+console.log(test)
 //##########################
 
 //####### ROUTE HANDLERS ##############
 
 // render urls_index when visiting /urls
 app.get("/urls", (req, res) => {
-  console.log("get urls");
+
+  console.log("test ",showUserRelevantUrls(req.session.userID));
   let templateVars = {
-    user: users[req.session.user_id],
-    usersURLS: showUserRelevantUrls(req.session.user_id),
-    isUser: isUser,
-    cookie: req.session.user_id,
+    user: users[req.session.userID],
+    usersURLS: showUserRelevantUrls(req.session.userID),
+    //isUser: isUser,
+    //cookie: req.session.user_id,
     urlDatabase: urlDatabase
   };
+  if(req.session.userID){
+    console.log("user logged in")
+  } else {
+    console.log("user not logged in")
+  }
+  console.log("get urls");
+
+  console.log("welcome");
   res.render('urls_index', templateVars);
 });
 
@@ -111,15 +139,21 @@ app.get("/urls.json", (req, res) => {
 //render new url page
 app.get("/urls/new", (req, res) => {
   let templateVars = {
-    user: users[req.session.user_id],
+    user: users[req.session.userID],
     urlDatabase: urlDatabase
   };
-  //checks to see if user has cookie when trying to access urls/new
-  if (isUser(req.session.user_id)) {
+  if(req.session.userID){
     res.render("urls_new", templateVars);
   } else {
     res.render("urls_login", templateVars);
   }
+
+  // //checks to see if user has cookie when trying to access urls/new
+  // if (isUser(req.session.user_id)) {
+
+  // } else {
+
+  // }
 });
 
 //add new url to list
@@ -128,7 +162,7 @@ app.post("/urls", (req, res) => {
   console.log("post urls")
   const longURL = req.body.longURL
   const shortStr = generateRandomString();
-  urlObj.userId = req.session.user_id;
+  urlObj.userId = req.session.userID;
   urlObj.shortURL = shortStr;
   urlObj.longURL = longURL;
   urlDatabase[shortStr] = urlObj;
@@ -149,7 +183,7 @@ app.get("/u/:shortURL", (req, res) => {
   console.log("get /u/shorturl");
   let shortStr = req.params.shortURL;
   let fullUrl = urlDatabase[shortStr].longURL;
-  res.redirect("http://www." + fullUrl);
+  res.redirect("http://www." + fullUrl);  //should be refactored with a function
 });
 
 //delete url
@@ -178,26 +212,44 @@ app.get("/login", (req, res) => {
 
 //cookies!
 app.post("/login", (req, res) => {
-  console.log("post login");
-  //check to see if email that user inputs is in the db
 
-  const userEmail = req.body.email;
-  const userPassword = req.body.password;
-  for (var key in users) {
-    if (userEmail === users[key].email && bcrypt.compareSync(userPassword, users[key].password)) {
-      req.session.users[key].id = 'user_id';
-      res.redirect("/urls");   // THIS IS SUPPOSED TO REDIRECT TO '/', WHICH HAD "HELLO"
-      return;
-    }
-  }
-  res.sendStatus(403);
+   const userEmail = req.body.email;
+   const userPassword = req.body.password;
+   let user = loginCheckUser(userEmail, userPassword)
+   if(user){
+     req.session.userID = user.id;
+     res.redirect("/urls");
+      console.log('username password matched')
+   } else {
+    res.sendStatus(403);
+   }
+  // console.log("post login");
+  // //check to see if email that user inputs is in the db
+  // const userEmail = req.body.email;
+  // const userPassword = req.body.password;
+  // const hashedPassword = bcrypt.hashSync(userPassword, 10);
+  // console.log("req.session: ", req.session);
+  // for (var key in users) {
+  //   console.log("userEmail: ", userEmail)
+  //   console.log("users[key].email: ", users[key].email)
+  //   console.log("userPassword: ", userPassword)
+  //   console.log("users[key].password: ", users[key].password)
+  //   if (userEmail === users[key].email && bcrypt.compareSync(userPassword, hashedPassword)) {
+  //     // req.session.users[key].userId = 'user_id';     //Removed this line because it did not seem to be doing anything. userId already equals 'user_id' by this point
+  //     res.session.userID = key;
+  //     res.redirect("/urls");   // THIS IS SUPPOSED TO REDIRECT TO '/', WHICH HAD "HELLO". changed for functional reasons
+  //     return;
+  //   }
+  // }
+  //res.sendStatus(403);
 });
 
 app.get("/register", (req, res) => {
   console.log("get /register")
   let templateVars = {
     user: users[req.session.user_id],
-    urlDatabase: urlDatabase
+    urlDatabase: urlDatabase,
+    isUser: false
   };
   res.render("urls_register", templateVars);
 });
@@ -228,7 +280,7 @@ app.post("/register", (req, res) =>  {
       users[userID]['id'] = userID;
       users[userID]['email'] = userEmail;
       users[userID]['password'] = hashedPassword;
-      req.session.userID = 'user_id';
+      req.session.userID = userID;
       res.redirect("/urls");
     }
   }
@@ -237,7 +289,11 @@ app.post("/register", (req, res) =>  {
 //logs the user out
 app.post("/logout", (req, res) => {
   console.log("get logout")
-  res.clearCookie('user_id').redirect('/urls');
+  //console.log(res.session);
+  //res.clearCookie('userID').redirect('/urls');
+
+  req.session = null
+  res.redirect('/urls');
 });
 
 app.listen(PORT, () => {

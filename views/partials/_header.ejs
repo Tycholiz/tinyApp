@@ -5,13 +5,14 @@
 </head>
 <body>
   <% if (!user) { %>
-  <h1>Welcome to TinyAPP!</h1>
-  <h2>Please take a seat and log in :)</h2>
-  <a href="/register">Register</a>
-  <a href="/login">Login</a>
-  <a href="/logout">Logout</a>
+    <h1>Welcome to TinyAPP!</h1>
+    <h2>Please take a seat and log in :)</h2>
+
+    <a href="/register">Register</a>
+    <a href="/login">Login</a>
+    <a href="/urls">Logout</a>
   <% } else { %>
-    <h1>Whaddup, biatch? (a.k.a <%= user.email %>)</h1>
+    <h1>Whaddup, <%= user.email %>?</h1>
     <form action="/logout" method="POST">
       <input type="submit" value="Logout">
     </form>
