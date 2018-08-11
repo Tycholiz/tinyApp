@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <title>TinyApp</title>
-</head>
-<body>
-  <% if (!user) { %>
-    <h1>Welcome to TinyAPP!</h1>
-    <h2>Please take a seat and log in :)</h2>
+  <head>
+    <title>TinyApp</title>
+  </head>
+  <body>
+    <% if (!user) { %>
+      <h1>Welcome to TinyAPP!</h1>
+      <h2>Please take a seat and log in :)</h2>
 
-    <a href="/register">Register</a>
-    <a href="/login">Login</a>
-    <a href="/urls">Logout</a>
-  <% } else { %>
-    <h1>Whaddup, <%= user.email %>?</h1>
-    <form action="/logout" method="POST">
-      <input type="submit" value="Logout">
-    </form>
-  <% } %>
-</body>
+      <a href="/register">Register</a>
+      <a href="/login">Login</a>
+    <% } else { %>
+      <h1>Whaddup, <%= user.email %>?</h1>
+      <form action="/logout" method="POST">
+        <input type="submit" value="Logout">
+      </form>
+    <% } %>
+  </body>
 </html>

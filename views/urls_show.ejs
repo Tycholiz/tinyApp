@@ -11,9 +11,10 @@
   <h2 style="margin: 50px 170px">
     ShortURL: <%= shortURL %>
   </h2>
+  <h3><a href="/u/<%= shortURL %>">Visit Url</a></h3>
   <form action="/urls/<%= shortURL %>" method="POST" style="margin:150px;">  <!-- action ="/" is what determines the connection to which route handler in express_server.js -->
     <label for="longURL"></label>
-    <input id="longURL" type="text" name="longURL" placeholder="<%= urlDatabase[shortURL] %>" style="width: 300px">
+    <input id="longURL" type="text" name="longURL" placeholder="Update URL" style="width: 300px">
     <input type="submit" value="Update">
   </form>
 </body>

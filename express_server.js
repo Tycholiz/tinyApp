@@ -42,7 +42,6 @@ function loginCheckUser(email, password){
     if(users[user].email===email){
       //check for the hashed password
       if(bcrypt.compareSync(password, users[user].password)){
-        console.log("compare sync matched")
         flag = true;
         return users[user];
       } // returns true
@@ -51,7 +50,6 @@ function loginCheckUser(email, password){
   return flag;
 }
 function showUserRelevantUrls(cookie) {
-  console.log(urlDatabase);
   var usersURLS = [];
   for (var i in urlDatabase) {
     if (urlDatabase[i].userId === cookie) {
@@ -74,17 +72,17 @@ function showUserRelevantUrls(cookie) {
 //########### DATA ############
 var urlDatabase = {
   "b2xVn2": {
-    longURL: "http://www.lighthouselabs.ca",
+    longURL: "lighthouselabs.ca",
     shortURL: "b2xVn2",
     userId: "userRandomID"
   },
   "9sm5xK": {
-    longURL: "http://www.google.com",
+    longURL: "www.google.com",
     shortURL: "9sm5xK",
     userId: "user2RandomID"
   },
   "h48dkm": {
-    longURL: "http://facebook.com",
+    longURL: "facebook.com",
     shortURL: "h48dkm",
     userId: "userRandomID"
   }
@@ -94,26 +92,22 @@ var users = {
   "userRandomID": {
     id: "userRandomID",
     email: "asd@asd.com",
-    password: "$2b$10$BqdR.tBdc8k8kMhP27Ucjud33/lNSH4JV.szWe9/7bvZgeJkT7Gf6"
+    password: "$2b$10$BqdR.tBdc8k8kMhP27Ucjud33/lNSH4JV.szWe9/7bvZgeJkT7Gf6"  //PW: asdasd
   },
   "user2RandomID": {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk"
+    password: "$2b$10$zghBW3/EppPve2KqPErTs.xsRrgpLAZBMaMI7ZUv/Jpu/uDmM2ENS" //PW: dishwasher-funk
   }
 }
 
-
-const test = bcrypt.hashSync("asdasd", 10);
-console.log(test)
 //##########################
 
 //####### ROUTE HANDLERS ##############
 
 // render urls_index when visiting /urls
 app.get("/urls", (req, res) => {
-
-  console.log("test ",showUserRelevantUrls(req.session.userID));
+  console.log("get urls");
   let templateVars = {
     user: users[req.session.userID],
     usersURLS: showUserRelevantUrls(req.session.userID),
@@ -121,14 +115,6 @@ app.get("/urls", (req, res) => {
     //cookie: req.session.user_id,
     urlDatabase: urlDatabase
   };
-  if(req.session.userID){
-    console.log("user logged in")
-  } else {
-    console.log("user not logged in")
-  }
-  console.log("get urls");
-
-  console.log("welcome");
   res.render('urls_index', templateVars);
 });
 
@@ -147,13 +133,6 @@ app.get("/urls/new", (req, res) => {
   } else {
     res.render("urls_login", templateVars);
   }
-
-  // //checks to see if user has cookie when trying to access urls/new
-  // if (isUser(req.session.user_id)) {
-
-  // } else {
-
-  // }
 });
 
 //add new url to list
@@ -219,29 +198,9 @@ app.post("/login", (req, res) => {
    if(user){
      req.session.userID = user.id;
      res.redirect("/urls");
-      console.log('username password matched')
    } else {
     res.sendStatus(403);
    }
-  // console.log("post login");
-  // //check to see if email that user inputs is in the db
-  // const userEmail = req.body.email;
-  // const userPassword = req.body.password;
-  // const hashedPassword = bcrypt.hashSync(userPassword, 10);
-  // console.log("req.session: ", req.session);
-  // for (var key in users) {
-  //   console.log("userEmail: ", userEmail)
-  //   console.log("users[key].email: ", users[key].email)
-  //   console.log("userPassword: ", userPassword)
-  //   console.log("users[key].password: ", users[key].password)
-  //   if (userEmail === users[key].email && bcrypt.compareSync(userPassword, hashedPassword)) {
-  //     // req.session.users[key].userId = 'user_id';     //Removed this line because it did not seem to be doing anything. userId already equals 'user_id' by this point
-  //     res.session.userID = key;
-  //     res.redirect("/urls");   // THIS IS SUPPOSED TO REDIRECT TO '/', WHICH HAD "HELLO". changed for functional reasons
-  //     return;
-  //   }
-  // }
-  //res.sendStatus(403);
 });
 
 app.get("/register", (req, res) => {
@@ -289,9 +248,6 @@ app.post("/register", (req, res) =>  {
 //logs the user out
 app.post("/logout", (req, res) => {
   console.log("get logout")
-  //console.log(res.session);
-  //res.clearCookie('userID').redirect('/urls');
-
   req.session = null
   res.redirect('/urls');
 });
