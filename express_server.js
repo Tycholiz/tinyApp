@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const functionsModule = require("./functions");
+const ejsLint = require('ejs-lint');
 
 const generateRandomString = functionsModule.generateRandomString;
 
@@ -27,8 +28,27 @@ function isUser(cookie) {
   }
 }
 
-//########### DATA ############
+function showUserRelevantUrls(cookie) {
+  var usersURLS = [];
+  for (var i in urlDatabase) {
+    if (urlDatabase[i].userId === cookie) {
+      var temp = {};
+      temp.longURL = urlDatabase[i].longURL;
+      temp.shortURL = urlDatabase[i].shortURL;
+      temp.userId = urlDatabase[i].userId;
+      usersURLS.push(temp);
 
+      // usersURLS.push({       alternative way to write
+      //   longURL: urlDatabase[i].longURL,
+      //   shortURL: urlDatabase[i].shortURL,
+      //   userId: urlDatabase[i].userId
+      // })
+    }
+  }
+  return usersURLS;
+}
+
+//########### DATA ############
 var urlDatabase = {
   "b2xVn2": {
     longURL: "http://www.lighthouselabs.ca",
@@ -39,6 +59,11 @@ var urlDatabase = {
     longURL: "http://www.google.com",
     shortURL: "9sm5xK",
     userId: "user2RandomID"
+  },
+  "h48dkm": {
+    longURL: "http://facebook.com",
+    shortURL: "h48dkm",
+    userId: "userRandomID"
   }
 }
 
@@ -55,22 +80,19 @@ const users = {
   }
 }
 
-
-
-// urlDatabase.user_ID = "user3RandomID";
-// urlDatabase.url_long = "www.facebook.com";
-// urlDatabase.url_short = "sjf74j";
-
-
 //##########################
 
 //####### ROUTE HANDLERS ##############
 
 // render urls_index when visiting /urls
 app.get("/urls", (req, res) => {
+  console.log(showUserRelevantUrls(req.cookies.user_id));
   console.log("get urls");
   let templateVars = {
     user: users[req.cookies.user_id],
+    usersURLS: showUserRelevantUrls(req.cookies.user_id),
+    isUser: isUser,
+    cookie: req.cookies.user_id,
     urlDatabase: urlDatabase
   };
   res.render('urls_index', templateVars);
@@ -95,7 +117,6 @@ app.get("/urls/new", (req, res) => {
 });
 
 //add new url to list
-
 app.post("/urls", (req, res) => {
   var urlObj = {}
   console.log("post urls")
@@ -105,7 +126,6 @@ app.post("/urls", (req, res) => {
   urlObj.shortURL = shortStr;
   urlObj.longURL = longURL;
   urlDatabase[shortStr] = urlObj;
-  console.log(urlDatabase);
   res.redirect('/urls/' + shortStr);
 });
 
