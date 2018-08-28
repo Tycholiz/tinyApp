@@ -1,13 +1,17 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
-const functionsModule = require("./functions");
 const bcrypt = require('bcrypt');
 
+const functionsModule = require("./functions");
+const database = require("./db");
 const generateRandomString = functionsModule.generateRandomString;
+const showUserRelevantUrls = functionsModule.showUserRelevantUrls;
+const users = database.users;
+const urlDatabase = database.urlDatabase;
 
 const app = express();
-const PORT = 8080; // default port 8080
+const PORT = 8080; // def+ault port 8080
 
 app.set("view engine", "ejs") //This tells the Express app to use EJS as its templating engine
 
@@ -18,7 +22,7 @@ app.use(cookieSession({
   keys: ["Mel", "Kyle", "Eli", "Huatulco", "Juno", "Molly", "Frankie"],
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
-//############################
+//################################
 
 
 function deleteURL(key) {
@@ -31,9 +35,6 @@ function isUser(cookie) {
     return false;
   }
 }
-
-
-
 
 function loginCheckUser(email, password){
 
@@ -49,70 +50,34 @@ function loginCheckUser(email, password){
   }
   return flag;
 }
-function showUserRelevantUrls(cookie) {
-  var usersURLS = [];
-  for (var i in urlDatabase) {
-    if (urlDatabase[i].userId === cookie) {
-      var temp = {};
-      temp.longURL = urlDatabase[i].longURL;
-      temp.shortURL = urlDatabase[i].shortURL;
-      temp.userId = urlDatabase[i].userId;
-      usersURLS.push(temp);
+// function showUserRelevantUrls(cookie) {
+//   var usersURLS = [];
+//   for (var i in urlDatabase) {
+//     if (urlDatabase[i].userId === cookie) {
+//       var temp = {};
+//       temp.longURL = urlDatabase[i].longURL;
+//       temp.shortURL = urlDatabase[i].shortURL;
+//       temp.userId = urlDatabase[i].userId;
+//       usersURLS.push(temp);
 
-      // usersURLS.push({                        alternative way to write this
-      //   longURL: urlDatabase[i].longURL,
-      //   shortURL: urlDatabase[i].shortURL,
-      //   userId: urlDatabase[i].userId
-      // })
-    }
-  }
-  return usersURLS;
-}
-
-//########### DATA ############
-var urlDatabase = {
-  "b2xVn2": {
-    longURL: "lighthouselabs.ca",
-    shortURL: "b2xVn2",
-    userId: "userRandomID"
-  },
-  "9sm5xK": {
-    longURL: "www.google.com",
-    shortURL: "9sm5xK",
-    userId: "user2RandomID"
-  },
-  "h48dkm": {
-    longURL: "facebook.com",
-    shortURL: "h48dkm",
-    userId: "userRandomID"
-  }
-}
-
-var users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "asd@asd.com",
-    password: "$2b$10$BqdR.tBdc8k8kMhP27Ucjud33/lNSH4JV.szWe9/7bvZgeJkT7Gf6"  //PW: asdasd
-  },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "$2b$10$zghBW3/EppPve2KqPErTs.xsRrgpLAZBMaMI7ZUv/Jpu/uDmM2ENS" //PW: dishwasher-funk
-  }
-}
-
-//##########################
+//       // usersURLS.push({                        alternative way to write this
+//       //   longURL: urlDatabase[i].longURL,
+//       //   shortURL: urlDatabase[i].shortURL,
+//       //   userId: urlDatabase[i].userId
+//       // })
+//     }
+//   }
+//   return usersURLS;
+// }
 
 //####### ROUTE HANDLERS ##############
 
 // render urls_index when visiting /urls
 app.get("/urls", (req, res) => {
-  console.log("get urls");
+  const userID = req.session.userID
   let templateVars = {
-    user: users[req.session.userID],
-    usersURLS: showUserRelevantUrls(req.session.userID),
-    //isUser: isUser,
-    //cookie: req.session.user_id,
+    user: users[userID],
+    usersURLS: showUserRelevantUrls(userID, urlDatabase),
     urlDatabase: urlDatabase
   };
   res.render('urls_index', templateVars);
