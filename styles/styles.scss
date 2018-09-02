@@ -1,0 +1,32 @@
+@import 'variables';
+
+.navbar-nav {
+    background: $primary-color;
+    .btn-light {
+        &:hover {
+            @include link;
+        }
+
+    }
+}
+
+
+//URLS (index)
+.new-url {
+    &:hover {
+        @include link;
+    }
+}
+.visit-btn {
+    color: white;
+    &:hover {
+        color: white;
+        @include link;
+    }
+}
+
+//REGISTER
+.form-control {
+    background: white;
+}
+

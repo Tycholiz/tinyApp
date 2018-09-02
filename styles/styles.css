@@ -1,0 +1,18 @@
+.navbar-nav {
+  background: skyblue; }
+  .navbar-nav .btn-light:hover {
+    text-decoration: none; }
+
+.new-url:hover {
+  text-decoration: none; }
+
+.visit-btn {
+  color: white; }
+  .visit-btn:hover {
+    color: white;
+    text-decoration: none; }
+
+.form-control {
+  background: white; }
+
+/*# sourceMappingURL=styles.css.map */

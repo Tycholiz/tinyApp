@@ -1,19 +1,19 @@
 module.exports = {
     urlDatabase: {
         "b2xVn2": {
-            longURL: "lighthouselabs.ca",
+            longURL: "http://www.lighthouselabs.ca",
             shortURL: "b2xVn2",
             userId: "userRandomID"
         },
         "9sm5xK": {
-            longURL: "www.google.com",
+            longURL: "http://www.google.com",
             shortURL: "9sm5xK",
-            userId: "user2RandomID"
+            userId: "userRandomID"
         },
         "h48dkm": {
-            longURL: "facebook.com",
+            longURL: "http://www.facebook.com",
             shortURL: "h48dkm",
-            userId: "user3RandomID"
+            userId: "user2RandomID"
         }
     },
     users: {

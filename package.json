@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "./node_modules/.bin/nodemon express_server.js -L",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -19,7 +20,9 @@
     "minipass": "^2.3.4",
     "safe-buffer": "^5.1.2"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^1.18.3"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Tycholiz/tinyApp.git"
